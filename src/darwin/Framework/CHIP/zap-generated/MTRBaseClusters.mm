@@ -101835,9 +101835,9 @@ public:
                                      completion:completion];
 }
 
-- (void)readAttributeDPTZRelativeMoveWithCompletion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
+- (void)readAttributeDPTZStreamsWithCompletion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
 {
-    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZRelativeMove::TypeInfo;
+    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZStreams::TypeInfo;
     [self.device _readKnownAttributeWithEndpointID:self.endpointID
                                          clusterID:@(TypeInfo::GetClusterId())
                                        attributeID:@(TypeInfo::GetAttributeId())
@@ -101846,11 +101846,11 @@ public:
                                         completion:completion];
 }
 
-- (void)subscribeAttributeDPTZRelativeMoveWithParams:(MTRSubscribeParams * _Nonnull)params
-                             subscriptionEstablished:(MTRSubscriptionEstablishedHandler _Nullable)subscriptionEstablished
-                                       reportHandler:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))reportHandler
+- (void)subscribeAttributeDPTZStreamsWithParams:(MTRSubscribeParams * _Nonnull)params
+                        subscriptionEstablished:(MTRSubscriptionEstablishedHandler _Nullable)subscriptionEstablished
+                                  reportHandler:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))reportHandler
 {
-    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZRelativeMove::TypeInfo;
+    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZStreams::TypeInfo;
     [self.device _subscribeToKnownAttributeWithEndpointID:self.endpointID
                                                 clusterID:@(TypeInfo::GetClusterId())
                                               attributeID:@(TypeInfo::GetAttributeId())
@@ -101860,9 +101860,9 @@ public:
                                   subscriptionEstablished:subscriptionEstablished];
 }
 
-+ (void)readAttributeDPTZRelativeMoveWithClusterStateCache:(MTRClusterStateCacheContainer *)clusterStateCacheContainer endpoint:(NSNumber *)endpoint queue:(dispatch_queue_t)queue completion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
++ (void)readAttributeDPTZStreamsWithClusterStateCache:(MTRClusterStateCacheContainer *)clusterStateCacheContainer endpoint:(NSNumber *)endpoint queue:(dispatch_queue_t)queue completion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
 {
-    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZRelativeMove::TypeInfo;
+    using TypeInfo = CameraAvSettingsUserLevelManagement::Attributes::DPTZStreams::TypeInfo;
     [clusterStateCacheContainer
         _readKnownCachedAttributeWithEndpointID:static_cast<chip::EndpointId>([endpoint unsignedShortValue])
                                       clusterID:TypeInfo::GetClusterId()
@@ -103078,13 +103078,13 @@ public:
                                      completion:completion];
 }
 
-- (void)readAttributeCurrentConnectionsWithCompletion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
+- (void)readAttributeCurrentConnectionsWithParams:(MTRReadParams * _Nullable)params completion:(void (^)(NSArray * _Nullable value, NSError * _Nullable error))completion
 {
     using TypeInfo = PushAvStreamTransport::Attributes::CurrentConnections::TypeInfo;
     [self.device _readKnownAttributeWithEndpointID:self.endpointID
                                          clusterID:@(TypeInfo::GetClusterId())
                                        attributeID:@(TypeInfo::GetAttributeId())
-                                            params:nil
+                                            params:params
                                              queue:self.callbackQueue
                                         completion:completion];
 }
@@ -108845,6 +108845,37 @@ public:
                                 timedInvokeTimeout:timedInvokeTimeoutMs
                        serverSideProcessingTimeout:params.serverSideProcessingTimeout
                                      responseClass:MTRUnitTestingClusterGlobalEchoResponseParams.class
+                                             queue:self.callbackQueue
+                                        completion:responseHandler];
+}
+- (void)testCheckCommandFlagsWithCompletion:(MTRStatusCompletion)completion
+{
+    [self testCheckCommandFlagsWithParams:nil completion:completion];
+}
+- (void)testCheckCommandFlagsWithParams:(MTRUnitTestingClusterTestCheckCommandFlagsParams * _Nullable)params completion:(MTRStatusCompletion)completion
+{
+    if (params == nil) {
+        params = [[MTRUnitTestingClusterTestCheckCommandFlagsParams
+            alloc] init];
+    }
+
+    auto responseHandler = ^(id _Nullable response, NSError * _Nullable error) {
+        completion(error);
+    };
+
+    auto * timedInvokeTimeoutMs = params.timedInvokeTimeoutMs;
+    if (timedInvokeTimeoutMs == nil) {
+        timedInvokeTimeoutMs = @(MTR_DEFAULT_TIMED_INTERACTION_TIMEOUT_MS);
+    }
+
+    using RequestType = UnitTesting::Commands::TestCheckCommandFlags::Type;
+    [self.device _invokeKnownCommandWithEndpointID:self.endpointID
+                                         clusterID:@(RequestType::GetClusterId())
+                                         commandID:@(RequestType::GetCommandId())
+                                    commandPayload:params
+                                timedInvokeTimeout:timedInvokeTimeoutMs
+                       serverSideProcessingTimeout:params.serverSideProcessingTimeout
+                                     responseClass:nil
                                              queue:self.callbackQueue
                                         completion:responseHandler];
 }

@@ -20136,9 +20136,9 @@ using chip::System::Clock::Timeout;
     return [self.device readAttributeWithEndpointID:self.endpointID clusterID:@(MTRClusterIDTypeCameraAVSettingsUserLevelManagementID) attributeID:@(MTRAttributeIDTypeClusterCameraAVSettingsUserLevelManagementAttributeMPTZPresetsID) params:params];
 }
 
-- (NSDictionary<NSString *, id> * _Nullable)readAttributeDPTZRelativeMoveWithParams:(MTRReadParams * _Nullable)params
+- (NSDictionary<NSString *, id> * _Nullable)readAttributeDPTZStreamsWithParams:(MTRReadParams * _Nullable)params
 {
-    return [self.device readAttributeWithEndpointID:self.endpointID clusterID:@(MTRClusterIDTypeCameraAVSettingsUserLevelManagementID) attributeID:@(MTRAttributeIDTypeClusterCameraAVSettingsUserLevelManagementAttributeDPTZRelativeMoveID) params:params];
+    return [self.device readAttributeWithEndpointID:self.endpointID clusterID:@(MTRClusterIDTypeCameraAVSettingsUserLevelManagementID) attributeID:@(MTRAttributeIDTypeClusterCameraAVSettingsUserLevelManagementAttributeDPTZStreamsID) params:params];
 }
 
 - (NSDictionary<NSString *, id> * _Nullable)readAttributeZoomMaxWithParams:(MTRReadParams * _Nullable)params
@@ -23199,6 +23199,40 @@ using chip::System::Clock::Timeout;
                                 timedInvokeTimeout:timedInvokeTimeoutMs
                        serverSideProcessingTimeout:params.serverSideProcessingTimeout
                                      responseClass:MTRUnitTestingClusterGlobalEchoResponseParams.class
+                                             queue:self.callbackQueue
+                                        completion:responseHandler];
+}
+
+- (void)testCheckCommandFlagsWithExpectedValues:(NSArray<NSDictionary<NSString *, id> *> *)expectedValues expectedValueInterval:(NSNumber *)expectedValueIntervalMs completion:(MTRStatusCompletion)completion
+{
+    [self testCheckCommandFlagsWithParams:nil expectedValues:expectedValues expectedValueInterval:expectedValueIntervalMs completion:completion];
+}
+- (void)testCheckCommandFlagsWithParams:(MTRUnitTestingClusterTestCheckCommandFlagsParams * _Nullable)params expectedValues:(NSArray<NSDictionary<NSString *, id> *> * _Nullable)expectedValues expectedValueInterval:(NSNumber * _Nullable)expectedValueIntervalMs completion:(MTRStatusCompletion)completion
+{
+    if (params == nil) {
+        params = [[MTRUnitTestingClusterTestCheckCommandFlagsParams
+            alloc] init];
+    }
+
+    auto responseHandler = ^(id _Nullable response, NSError * _Nullable error) {
+        completion(error);
+    };
+
+    auto * timedInvokeTimeoutMs = params.timedInvokeTimeoutMs;
+    if (timedInvokeTimeoutMs == nil) {
+        timedInvokeTimeoutMs = @(MTR_DEFAULT_TIMED_INTERACTION_TIMEOUT_MS);
+    }
+
+    using RequestType = UnitTesting::Commands::TestCheckCommandFlags::Type;
+    [self.device _invokeKnownCommandWithEndpointID:self.endpointID
+                                         clusterID:@(RequestType::GetClusterId())
+                                         commandID:@(RequestType::GetCommandId())
+                                    commandPayload:params
+                                    expectedValues:expectedValues
+                             expectedValueInterval:expectedValueIntervalMs
+                                timedInvokeTimeout:timedInvokeTimeoutMs
+                       serverSideProcessingTimeout:params.serverSideProcessingTimeout
+                                     responseClass:nil
                                              queue:self.callbackQueue
                                         completion:responseHandler];
 }
