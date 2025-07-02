@@ -18,6 +18,7 @@
 
 #include <CommodityMeteringInstance.h>
 #include <app/clusters/commodity-metering-server/CommodityMeteringTestEventTriggerHandler.h>
+#include <vector>
 #include <array>
 #include <cstdint>
 
@@ -193,7 +194,7 @@ private:
             mTariffUnit.SetNonNull(Globals::TariffUnitEnum::kKWh);
         }
 
-        auto MQSampleArray = GetMeteredQuantityDataSample(static_cast<uint8_t>(mTariffUnit == Globals::TariffUnitEnum::kKWh));
+        auto MQSampleArray = GetMeteredQuantityDataSample(static_cast<uint8_t>(mTariffUnit.Value() == Globals::TariffUnitEnum::kKWh));
 
         std::vector<Structs::MeteredQuantityStruct::Type> tempCopy(MQSampleArray.begin(), MQSampleArray.end());
 
