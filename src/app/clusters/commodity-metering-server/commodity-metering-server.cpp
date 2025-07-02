@@ -250,7 +250,11 @@ CHIP_ERROR Instance::Read(const ConcreteReadAttributePath & aPath, AttributeValu
         ReturnErrorOnFailure(aEncoder.EncodeList([&list](const auto & encoder) {
             for (const auto & item : list.Value())
             {
-                ReturnErrorOnFailure(encoder.Encode(item));
+                CHIP_ERROR err = encoder.Encode(item);
+                if (err != CHIP_NO_ERROR)
+                {
+                    return err;
+                }
             }
             return CHIP_NO_ERROR;
         }));
