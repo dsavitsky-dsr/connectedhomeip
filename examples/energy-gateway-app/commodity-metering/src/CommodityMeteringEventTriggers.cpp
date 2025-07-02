@@ -59,7 +59,7 @@ private:
 
     DataModel::Nullable<DataModel::List<Structs::MeteredQuantityStruct::Type>> mMeteredQuantity;
     DataModel::Nullable<uint32_t> mMeteredQuantityTimestamp;
-    Globals::TariffUnitEnum mTariffUnit;
+    DataModel::Nullable<Globals::TariffUnitEnum> mTariffUnit;
 
     std::array<const Structs::MeteredQuantityStruct::Type, 2> GetMeteredQuantityDataSample(uint8_t presetIdx)
     {
@@ -159,6 +159,7 @@ private:
     {
         ClearMeteredQuantity();
         mMeteredQuantityTimestamp.SetNull();
+        mTariffUnit.SetNull();
     }
 
     void RestoreAttributes() const
@@ -183,13 +184,13 @@ private:
 
         mMeteredQuantityTimestamp.SetNonNull(matterEpoch);
 
-        if (mTariffUnit == Globals::TariffUnitEnum::kKWh)
+        if (mTariffUnit.Value() == Globals::TariffUnitEnum::kKWh)
         {
-            mTariffUnit = Globals::TariffUnitEnum::kKVAh;
+            mTariffUnit.SetNonNull(Globals::TariffUnitEnum::kKVAh);
         }
         else
         {
-            mTariffUnit = Globals::TariffUnitEnum::kKWh;
+            mTariffUnit.SetNonNull(Globals::TariffUnitEnum::kKWh);
         }
 
         auto MQSampleArray = GetMeteredQuantityDataSample(static_cast<uint8_t>(mTariffUnit == Globals::TariffUnitEnum::kKWh));
