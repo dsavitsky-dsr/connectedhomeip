@@ -226,7 +226,7 @@ CHIP_ERROR Instance::SetTariffUnit(DataModel::Nullable<TariffUnitEnum> newValue)
             mTariffUnit = newValue;
             ChipLogDetail(AppServer, "Endpoint: %d - mTariffUnit updated to %d", mEndpointId, to_underlying(mTariffUnit.Value()));
         }
-        else 
+        else
         {
             return CHIP_IM_GLOBAL_STATUS(ConstraintError);
         }
