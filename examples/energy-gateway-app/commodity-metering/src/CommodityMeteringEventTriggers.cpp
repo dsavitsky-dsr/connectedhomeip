@@ -21,6 +21,7 @@
 #include <vector>
 #include <array>
 #include <cstdint>
+#include <vector>
 
 using namespace chip;
 using namespace chip::app;
@@ -194,7 +195,8 @@ private:
             mTariffUnit.SetNonNull(Globals::TariffUnitEnum::kKWh);
         }
 
-        auto MQSampleArray = GetMeteredQuantityDataSample(static_cast<uint8_t>(mTariffUnit.Value() == Globals::TariffUnitEnum::kKWh));
+        auto MQSampleArray =
+            GetMeteredQuantityDataSample(static_cast<uint8_t>(mTariffUnit.Value() == Globals::TariffUnitEnum::kKWh));
 
         std::vector<Structs::MeteredQuantityStruct::Type> tempCopy(MQSampleArray.begin(), MQSampleArray.end());
 
