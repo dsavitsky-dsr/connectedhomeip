@@ -42,6 +42,14 @@ namespace app {
 namespace Clusters {
 namespace CommodityMetering {
 
+// Some constraints for lists limitation ( does'nt defined in spec )
+constexpr uint8_t kMaxMeteredQuantityEntries                    = 128;
+constexpr uint8_t kMaxTariffComponentIDsPerMeteredQuantityEntry = 128;
+
+static Platform::ScopedMemoryBuffer<uint32_t>
+    mOwnedMeteredQuantityTariffComponentIDsBuffer[kMaxMeteredQuantityEntries][kMaxTariffComponentIDsPerMeteredQuantityEntry];
+static Platform::ScopedMemoryBuffer<Structs::MeteredQuantityStruct::Type> mOwnedMeteredQuantityStructBuffer;
+
 namespace {
 
 inline bool operator==(const Span<const uint32_t> & a, const Span<const uint32_t> & b)
@@ -199,8 +207,7 @@ CHIP_ERROR Instance::SetMeteredQuantityTimestamp(DataModel::Nullable<uint32_t> n
         }
         else
         {
-            ChipLogDetail(AppServer, "MeteredQuantityTimestamp updated to %lu",
-                          static_cast<unsigned long int>(newValue.Value()));
+            ChipLogDetail(AppServer, "MeteredQuantityTimestamp updated to %lu", static_cast<unsigned long int>(newValue.Value()));
         }
 
         mMeteredQuantityTimestamp = newValue;
@@ -248,7 +255,7 @@ CHIP_ERROR Instance::Read(const ConcreteReadAttributePath & aPath, AttributeValu
     case MeteredQuantity::Id: {
         if (GetMeteredQuantity().IsNull())
         {
-            ReturnErrorOnFailure(aEncoder.Encode(GetMeteredQuantity()));
+            return aEncoder.EncodeNull();
         }
         else
         {
