@@ -315,7 +315,7 @@ CHIP_ERROR Instance::Read(const ConcreteReadAttributePath & aPath, AttributeValu
         ReturnErrorOnFailure(aEncoder.Encode(GetTariffUnit()));
         break;
 
-    case MaximumMeteredQuantities:Id:
+    case MaximumMeteredQuantities::Id:
         ReturnErrorOnFailure(aEncoder.Encode(GetMaximumMeteredQuantities()));
         break;
 
