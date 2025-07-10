@@ -174530,7 +174530,7 @@ public:
 | Attributes:                                                         |        |
 | * MeteredQuantity                                                   | 0x0000 |
 | * MeteredQuantityTimestamp                                          | 0x0001 |
-| * TariffUnit                                                        | 0x0002 |
+| * MeasurementType                                                   | 0x0002 |
 | * MaximumMeteredQuantities                                          | 0x0003 |
 | * GeneratedCommandList                                              | 0xFFF8 |
 | * AcceptedCommandList                                               | 0xFFF9 |
@@ -174714,34 +174714,34 @@ public:
 #if MTR_ENABLE_PROVISIONAL
 
 /*
- * Attribute TariffUnit
+ * Attribute MeasurementType
  */
-class ReadCommodityMeteringTariffUnit : public ReadAttribute {
+class ReadCommodityMeteringMeasurementType : public ReadAttribute {
 public:
-    ReadCommodityMeteringTariffUnit()
-        : ReadAttribute("tariff-unit")
+    ReadCommodityMeteringMeasurementType()
+        : ReadAttribute("measurement-type")
     {
     }
 
-    ~ReadCommodityMeteringTariffUnit()
+    ~ReadCommodityMeteringMeasurementType()
     {
     }
 
     CHIP_ERROR SendCommand(MTRBaseDevice * device, chip::EndpointId endpointId) override
     {
         constexpr chip::ClusterId clusterId = chip::app::Clusters::CommodityMetering::Id;
-        constexpr chip::AttributeId attributeId = chip::app::Clusters::CommodityMetering::Attributes::TariffUnit::Id;
+        constexpr chip::AttributeId attributeId = chip::app::Clusters::CommodityMetering::Attributes::MeasurementType::Id;
 
         ChipLogProgress(chipTool, "Sending cluster (0x%08" PRIX32 ") ReadAttribute (0x%08" PRIX32 ") on endpoint %u", endpointId, clusterId, attributeId);
 
         dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.command", DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL);
         __auto_type * cluster = [[MTRBaseClusterCommodityMetering alloc] initWithDevice:device endpointID:@(endpointId) queue:callbackQueue];
-        [cluster readAttributeTariffUnitWithCompletion:^(NSNumber * _Nullable value, NSError * _Nullable error) {
-            NSLog(@"CommodityMetering.TariffUnit response %@", [value description]);
+        [cluster readAttributeMeasurementTypeWithCompletion:^(NSNumber * _Nullable value, NSError * _Nullable error) {
+            NSLog(@"CommodityMetering.MeasurementType response %@", [value description]);
             if (error == nil) {
                 RemoteDataModelLogger::LogAttributeAsJSON(@(endpointId), @(clusterId), @(attributeId), value);
             } else {
-                LogNSError("CommodityMetering TariffUnit read Error", error);
+                LogNSError("CommodityMetering MeasurementType read Error", error);
                 RemoteDataModelLogger::LogAttributeErrorAsJSON(@(endpointId), @(clusterId), @(attributeId), error);
             }
             SetCommandExitStatus(error);
@@ -174750,21 +174750,21 @@ public:
     }
 };
 
-class SubscribeAttributeCommodityMeteringTariffUnit : public SubscribeAttribute {
+class SubscribeAttributeCommodityMeteringMeasurementType : public SubscribeAttribute {
 public:
-    SubscribeAttributeCommodityMeteringTariffUnit()
-        : SubscribeAttribute("tariff-unit")
+    SubscribeAttributeCommodityMeteringMeasurementType()
+        : SubscribeAttribute("measurement-type")
     {
     }
 
-    ~SubscribeAttributeCommodityMeteringTariffUnit()
+    ~SubscribeAttributeCommodityMeteringMeasurementType()
     {
     }
 
     CHIP_ERROR SendCommand(MTRBaseDevice * device, chip::EndpointId endpointId) override
     {
         constexpr chip::ClusterId clusterId = chip::app::Clusters::CommodityMetering::Id;
-        constexpr chip::CommandId attributeId = chip::app::Clusters::CommodityMetering::Attributes::TariffUnit::Id;
+        constexpr chip::CommandId attributeId = chip::app::Clusters::CommodityMetering::Attributes::MeasurementType::Id;
 
         ChipLogProgress(chipTool, "Sending cluster (0x%08" PRIX32 ") ReportAttribute (0x%08" PRIX32 ") on endpoint %u", clusterId, attributeId, endpointId);
         dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.command", DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL);
@@ -174779,10 +174779,10 @@ public:
         if (mAutoResubscribe.HasValue()) {
             params.resubscribeAutomatically = mAutoResubscribe.Value();
         }
-        [cluster subscribeAttributeTariffUnitWithParams:params
+        [cluster subscribeAttributeMeasurementTypeWithParams:params
             subscriptionEstablished:^() { mSubscriptionEstablished = YES; }
             reportHandler:^(NSNumber * _Nullable value, NSError * _Nullable error) {
-                NSLog(@"CommodityMetering.TariffUnit response %@", [value description]);
+                NSLog(@"CommodityMetering.MeasurementType response %@", [value description]);
                 if (error == nil) {
                     RemoteDataModelLogger::LogAttributeAsJSON(@(endpointId), @(clusterId), @(attributeId), value);
                 } else {
@@ -196969,8 +196969,8 @@ void registerClusterCommodityMetering(Commands & commands)
         make_unique<SubscribeAttributeCommodityMeteringMeteredQuantityTimestamp>(), //
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
-        make_unique<ReadCommodityMeteringTariffUnit>(), //
-        make_unique<SubscribeAttributeCommodityMeteringTariffUnit>(), //
+        make_unique<ReadCommodityMeteringMeasurementType>(), //
+        make_unique<SubscribeAttributeCommodityMeteringMeasurementType>(), //
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
         make_unique<ReadCommodityMeteringMaximumMeteredQuantities>(), //
