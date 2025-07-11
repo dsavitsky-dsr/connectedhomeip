@@ -156,7 +156,7 @@ private:
         mMaximumMeteredQuantities = mInstance->GetMaximumMeteredQuantities();
         SaveMeteredQuantity(mInstance->GetMeteredQuantity());
         mMeteredQuantityTimestamp = mInstance->GetMeteredQuantityTimestamp();
-        mMeasurementType               = mInstance->GetMeasurementType();
+        mMeasurementType          = mInstance->GetMeasurementType();
     }
 
     void ClearAttributes()
