@@ -171228,7 +171228,7 @@ public:
 | * FindRootCertificate                                               |   0x02 |
 | * LookupRootCertificate                                             |   0x04 |
 | * RemoveRootCertificate                                             |   0x06 |
-| * TLSClientCSR                                                      |   0x07 |
+| * ClientCSR                                                         |   0x07 |
 | * ProvisionClientCertificate                                        |   0x09 |
 | * FindClientCertificate                                             |   0x0A |
 | * LookupClientCertificate                                           |   0x0C |
@@ -171494,15 +171494,18 @@ private:
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
 /*
- * Command TLSClientCSR
+ * Command ClientCSR
  */
-class TlsCertificateManagementTLSClientCSR : public ClusterCommand {
+class TlsCertificateManagementClientCSR : public ClusterCommand {
 public:
-    TlsCertificateManagementTLSClientCSR()
-        : ClusterCommand("tlsclient-csr")
+    TlsCertificateManagementClientCSR()
+        : ClusterCommand("client-csr")
     {
 #if MTR_ENABLE_PROVISIONAL
         AddArgument("Nonce", &mRequest.nonce);
+#endif // MTR_ENABLE_PROVISIONAL
+#if MTR_ENABLE_PROVISIONAL
+        AddArgument("Ccdid", 0, UINT16_MAX, &mRequest.ccdid);
 #endif // MTR_ENABLE_PROVISIONAL
         ClusterCommand::AddArguments();
     }
@@ -171510,32 +171513,39 @@ public:
     CHIP_ERROR SendCommand(MTRBaseDevice * device, chip::EndpointId endpointId) override
     {
         constexpr chip::ClusterId clusterId = chip::app::Clusters::TlsCertificateManagement::Id;
-        constexpr chip::CommandId commandId = chip::app::Clusters::TlsCertificateManagement::Commands::TLSClientCSR::Id;
+        constexpr chip::CommandId commandId = chip::app::Clusters::TlsCertificateManagement::Commands::ClientCSR::Id;
 
         ChipLogProgress(chipTool, "Sending cluster (0x%08" PRIX32 ") command (0x%08" PRIX32 ") on endpoint %u", clusterId, commandId, endpointId);
 
         dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.command", DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL);
         __auto_type * cluster = [[MTRBaseClusterTLSCertificateManagement alloc] initWithDevice:device endpointID:@(endpointId) queue:callbackQueue];
-        __auto_type * params = [[MTRTLSCertificateManagementClusterTLSClientCSRParams alloc] init];
+        __auto_type * params = [[MTRTLSCertificateManagementClusterClientCSRParams alloc] init];
         params.timedInvokeTimeoutMs = mTimedInteractionTimeoutMs.HasValue() ? [NSNumber numberWithUnsignedShort:mTimedInteractionTimeoutMs.Value()] : nil;
 #if MTR_ENABLE_PROVISIONAL
         params.nonce = [NSData dataWithBytes:mRequest.nonce.data() length:mRequest.nonce.size()];
 #endif // MTR_ENABLE_PROVISIONAL
+#if MTR_ENABLE_PROVISIONAL
+        if (mRequest.ccdid.IsNull()) {
+            params.ccdid = nil;
+        } else {
+            params.ccdid = [NSNumber numberWithUnsignedShort:mRequest.ccdid.Value()];
+        }
+#endif // MTR_ENABLE_PROVISIONAL
         uint16_t repeatCount = mRepeatCount.ValueOr(1);
         uint16_t __block responsesNeeded = repeatCount;
         while (repeatCount--) {
-            [cluster TLSClientCSRWithParams:params completion:
-                    ^(MTRTLSCertificateManagementClusterTLSClientCSRResponseParams * _Nullable values, NSError * _Nullable error) {
+            [cluster clientCSRWithParams:params completion:
+                    ^(MTRTLSCertificateManagementClusterClientCSRResponseParams * _Nullable values, NSError * _Nullable error) {
                         NSLog(@"Values: %@", values);
                         if (error == nil) {
-                            constexpr chip::CommandId responseId = chip::app::Clusters::TlsCertificateManagement::Commands::TLSClientCSRResponse::Id;
+                            constexpr chip::CommandId responseId = chip::app::Clusters::TlsCertificateManagement::Commands::ClientCSRResponse::Id;
                             RemoteDataModelLogger::LogCommandAsJSON(@(endpointId), @(clusterId), @(responseId), values);
                         }
                         responsesNeeded--;
                         if (error != nil) {
                             mError = error;
                             LogNSError("Error", error);
-                            constexpr chip::CommandId responseId = chip::app::Clusters::TlsCertificateManagement::Commands::TLSClientCSRResponse::Id;
+                            constexpr chip::CommandId responseId = chip::app::Clusters::TlsCertificateManagement::Commands::ClientCSRResponse::Id;
                             RemoteDataModelLogger::LogCommandErrorAsJSON(@(endpointId), @(clusterId), @(responseId), error);
                         }
                         if (responsesNeeded == 0) {
@@ -171547,7 +171557,7 @@ public:
     }
 
 private:
-    chip::app::Clusters::TlsCertificateManagement::Commands::TLSClientCSR::Type mRequest;
+    chip::app::Clusters::TlsCertificateManagement::Commands::ClientCSR::Type mRequest;
 };
 
 #endif // MTR_ENABLE_PROVISIONAL
@@ -171559,13 +171569,16 @@ class TlsCertificateManagementProvisionClientCertificate : public ClusterCommand
 public:
     TlsCertificateManagementProvisionClientCertificate()
         : ClusterCommand("provision-client-certificate")
-        , mComplex_ClientCertificateDetails(&mRequest.clientCertificateDetails)
+        , mComplex_IntermediateCertificates(&mRequest.intermediateCertificates)
     {
 #if MTR_ENABLE_PROVISIONAL
         AddArgument("Ccdid", 0, UINT16_MAX, &mRequest.ccdid);
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
-        AddArgument("ClientCertificateDetails", &mComplex_ClientCertificateDetails);
+        AddArgument("ClientCertificate", &mRequest.clientCertificate);
+#endif // MTR_ENABLE_PROVISIONAL
+#if MTR_ENABLE_PROVISIONAL
+        AddArgument("IntermediateCertificates", &mComplex_IntermediateCertificates);
 #endif // MTR_ENABLE_PROVISIONAL
         ClusterCommand::AddArguments();
     }
@@ -171585,27 +171598,18 @@ public:
         params.ccdid = [NSNumber numberWithUnsignedShort:mRequest.ccdid];
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
-        params.clientCertificateDetails = [MTRTLSCertificateManagementClusterTLSClientCertificateDetailStruct new];
-        params.clientCertificateDetails.ccdid = [NSNumber numberWithUnsignedShort:mRequest.clientCertificateDetails.ccdid];
-        if (mRequest.clientCertificateDetails.clientCertificate.HasValue()) {
-            params.clientCertificateDetails.clientCertificate = [NSData dataWithBytes:mRequest.clientCertificateDetails.clientCertificate.Value().data() length:mRequest.clientCertificateDetails.clientCertificate.Value().size()];
-        } else {
-            params.clientCertificateDetails.clientCertificate = nil;
-        }
-        if (mRequest.clientCertificateDetails.intermediateCertificates.HasValue()) {
-            { // Scope for our temporary variables
-                auto * array_2 = [NSMutableArray new];
-                for (auto & entry_2 : mRequest.clientCertificateDetails.intermediateCertificates.Value()) {
-                    NSData * newElement_2;
-                    newElement_2 = [NSData dataWithBytes:entry_2.data() length:entry_2.size()];
-                    [array_2 addObject:newElement_2];
-                }
-                params.clientCertificateDetails.intermediateCertificates = array_2;
+        params.clientCertificate = [NSData dataWithBytes:mRequest.clientCertificate.data() length:mRequest.clientCertificate.size()];
+#endif // MTR_ENABLE_PROVISIONAL
+#if MTR_ENABLE_PROVISIONAL
+        { // Scope for our temporary variables
+            auto * array_0 = [NSMutableArray new];
+            for (auto & entry_0 : mRequest.intermediateCertificates) {
+                NSData * newElement_0;
+                newElement_0 = [NSData dataWithBytes:entry_0.data() length:entry_0.size()];
+                [array_0 addObject:newElement_0];
             }
-        } else {
-            params.clientCertificateDetails.intermediateCertificates = nil;
+            params.intermediateCertificates = array_0;
         }
-        params.clientCertificateDetails.fabricIndex = [NSNumber numberWithUnsignedChar:mRequest.clientCertificateDetails.fabricIndex];
 #endif // MTR_ENABLE_PROVISIONAL
         uint16_t repeatCount = mRepeatCount.ValueOr(1);
         uint16_t __block responsesNeeded = repeatCount;
@@ -171628,7 +171632,7 @@ public:
 
 private:
     chip::app::Clusters::TlsCertificateManagement::Commands::ProvisionClientCertificate::Type mRequest;
-    TypedComplexArgument<chip::app::Clusters::TlsCertificateManagement::Structs::TLSClientCertificateDetailStruct::Type> mComplex_ClientCertificateDetails;
+    TypedComplexArgument<chip::app::DataModel::List<const chip::ByteSpan>> mComplex_IntermediateCertificates;
 };
 
 #endif // MTR_ENABLE_PROVISIONAL
@@ -196663,7 +196667,7 @@ void registerClusterTlsCertificateManagement(Commands & commands)
         make_unique<TlsCertificateManagementRemoveRootCertificate>(), //
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
-        make_unique<TlsCertificateManagementTLSClientCSR>(), //
+        make_unique<TlsCertificateManagementClientCSR>(), //
 #endif // MTR_ENABLE_PROVISIONAL
 #if MTR_ENABLE_PROVISIONAL
         make_unique<TlsCertificateManagementProvisionClientCertificate>(), //

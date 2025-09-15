@@ -106841,10 +106841,10 @@ public:
                                              queue:self.callbackQueue
                                         completion:responseHandler];
 }
-- (void)TLSClientCSRWithParams:(MTRTLSCertificateManagementClusterTLSClientCSRParams *)params completion:(void (^)(MTRTLSCertificateManagementClusterTLSClientCSRResponseParams * _Nullable data, NSError * _Nullable error))completion
+- (void)clientCSRWithParams:(MTRTLSCertificateManagementClusterClientCSRParams *)params completion:(void (^)(MTRTLSCertificateManagementClusterClientCSRResponseParams * _Nullable data, NSError * _Nullable error))completion
 {
     if (params == nil) {
-        params = [[MTRTLSCertificateManagementClusterTLSClientCSRParams
+        params = [[MTRTLSCertificateManagementClusterClientCSRParams
             alloc] init];
     }
 
@@ -106854,14 +106854,14 @@ public:
 
     auto * timedInvokeTimeoutMs = params.timedInvokeTimeoutMs;
 
-    using RequestType = TlsCertificateManagement::Commands::TLSClientCSR::Type;
+    using RequestType = TlsCertificateManagement::Commands::ClientCSR::Type;
     [self.device _invokeKnownCommandWithEndpointID:self.endpointID
                                          clusterID:@(RequestType::GetClusterId())
                                          commandID:@(RequestType::GetCommandId())
                                     commandPayload:params
                                 timedInvokeTimeout:timedInvokeTimeoutMs
                        serverSideProcessingTimeout:params.serverSideProcessingTimeout
-                                     responseClass:MTRTLSCertificateManagementClusterTLSClientCSRResponseParams.class
+                                     responseClass:MTRTLSCertificateManagementClusterClientCSRResponseParams.class
                                              queue:self.callbackQueue
                                         completion:responseHandler];
 }
