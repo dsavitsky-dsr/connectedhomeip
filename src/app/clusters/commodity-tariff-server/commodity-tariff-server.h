@@ -123,6 +123,24 @@ public:
      */
     CommodityTariffAttrsDataMgmt::CTC_BaseDataClassBase & GetMgmtObj(CommodityTariffAttrTypeEnum aType);
 
+    /**
+     * @brief Process incoming tariff data updates
+     *
+     * This method implements a three-phase update process:
+     * 1. Initial validation (TariffDataUpd_Init)
+     * 2. Cross-field validation (TariffDataUpd_CrossValidator)
+     * 3. Commit or abort (TariffDataUpd_Commit/Abort)
+     */
+    void TariffDataUpdate(uint32_t aNowTimestamp);
+
+    // Primary attrs update pipeline methods
+    CHIP_ERROR TariffDataUpd_Init(TariffUpdateCtx & UpdCtx);
+    CHIP_ERROR TariffDataUpd_CrossValidator(TariffUpdateCtx & UpdCtx);
+    void TariffDataUpd_Finish(bool is_success);
+
+    void TryToactivateDelayedTariff(uint32_t now);
+    void CleanupTariffData();
+
 private:
     // Primary attribute storage and management
     TariffUnitDataClass mTariffUnit_MgmtObj{};
@@ -184,7 +202,7 @@ public:
 
     void AttributeUpdCb(AttributeId aAttrId)
     {
-        ChipLogProgress(NotSpecified, "EGW-CTC: The value for attribute (Id %" PRIu32 ") updated", aAttrId);
+        ChipLogProgress(AppServer, "EGW-CTC: The value for attribute (Id %" PRIu32 ") updated", aAttrId);
         MatterReportingAttributeChangeCallback(mEndpointId, CommodityTariff::Id, aAttrId);
     }
 
@@ -283,17 +301,6 @@ private:
     CHIP_ERROR UpdateDayInformation(uint32_t now);
     CHIP_ERROR UpdateDayEntryInformation(uint32_t now);
     void DeinitCurrentAttrs();
-
-protected:
-    virtual uint32_t GetCurrentTimestamp()
-    {
-        System::Clock::Microseconds64 utcTimeUnix;
-        uint64_t chipEpochTime;
-        System::SystemClock().GetClock_RealTime(utcTimeUnix);
-        UnixEpochToChipEpochMicros(utcTimeUnix.count(), chipEpochTime);
-
-        return static_cast<uint32_t>(chipEpochTime / chip::kMicrosecondsPerSecond);
-    };
 };
 
 } // namespace CommodityTariff
