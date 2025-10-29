@@ -738,6 +738,7 @@ CHIP_ERROR Instance::Init()
 {
     ReturnErrorOnFailure(CommandHandlerInterfaceRegistry::Instance().RegisterCommandHandler(this));
     VerifyOrReturnError(AttributeAccessInterfaceRegistry::Instance().Register(this), CHIP_ERROR_INCORRECT_STATE);
+    mServerTariffAttrsCtx.mTariffProvider = nullptr;
 
     return CHIP_NO_ERROR;
 }
@@ -989,19 +990,9 @@ void Instance::TariffDataUpdatedCb(bool is_erased, const AttributeId * aUpdatedA
 
 using CurrentTariffAttrsCtx = CommodityTariff::Instance::CurrentTariffAttrsCtx;
 
-static void AttrsCtxInit(Delegate & aTariffProvider, CurrentTariffAttrsCtx & aCtx)
-{
-    aCtx.mTariffProvider = &aTariffProvider;
-}
-
-static void AttrsCtxDeinit(CurrentTariffAttrsCtx & aCtx)
-{
-    aCtx.mTariffProvider = nullptr;
-}
-
 void Instance::InitCurrentAttrs()
 {
-    AttrsCtxInit(mDelegate, mServerTariffAttrsCtx);
+    mServerTariffAttrsCtx.mTariffProvider = &mDelegate;
     CHIP_ERROR err = UpdateCurrentAttrs();
     if (err != CHIP_NO_ERROR)
     {
@@ -1125,8 +1116,8 @@ CHIP_ERROR Instance::UpdateDayEntryInformation(uint32_t matterEpochNow_s)
 
 void Instance::DeinitCurrentAttrs()
 {
-    AttrsCtxDeinit(mServerTariffAttrsCtx);
     ResetCurrentAttributes();
+    mServerTariffAttrsCtx.mTariffProvider = nullptr;    
 }
 
 void Instance::HandleGetTariffComponent(HandlerContext & ctx, const Commands::GetTariffComponent::DecodableType & commandData)
