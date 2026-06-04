@@ -119682,15 +119682,12 @@ public:
        auto & nonNullValue_1 = cppValue.myBitmap.SetNonNull();
          nonNullValue_1 = static_cast<std::remove_reference_t<decltype(nonNullValue_1)>>(value.myBitmap.unsignedIntValue);
   }
-     if (value.myEnum != nil) {
-       auto & definedValue_1 = cppValue.myEnum.Emplace();
-         if (value.myEnum == nil) {
-           definedValue_1.SetNull();
-         } else {
-           auto & nonNullValue_2 = definedValue_1.SetNonNull();
-             nonNullValue_2 = static_cast<std::remove_reference_t<decltype(nonNullValue_2)>>(value.myEnum.unsignedCharValue);
+     if (value.myEnum == nil) {
+       cppValue.myEnum.SetNull();
+     } else {
+       auto & nonNullValue_1 = cppValue.myEnum.SetNonNull();
+         nonNullValue_1 = static_cast<std::remove_reference_t<decltype(nonNullValue_1)>>(value.myEnum.unsignedCharValue);
   }
-     }
 
         chip::Controller::ClusterBase cppCluster(exchangeManager, session, self.endpointID.unsignedShortValue);
         return cppCluster.WriteAttribute<TypeInfo>(cppValue, bridge, successCb, failureCb, timedWriteTimeout); });
@@ -122442,15 +122439,12 @@ public:
        auto & nonNullValue_2 = nonNullValue_0.myBitmap.SetNonNull();
          nonNullValue_2 = static_cast<std::remove_reference_t<decltype(nonNullValue_2)>>(value.myBitmap.unsignedIntValue);
   }
-     if (value.myEnum != nil) {
-       auto & definedValue_2 = nonNullValue_0.myEnum.Emplace();
-         if (value.myEnum == nil) {
-           definedValue_2.SetNull();
-         } else {
-           auto & nonNullValue_3 = definedValue_2.SetNonNull();
-             nonNullValue_3 = static_cast<std::remove_reference_t<decltype(nonNullValue_3)>>(value.myEnum.unsignedCharValue);
+     if (value.myEnum == nil) {
+       nonNullValue_0.myEnum.SetNull();
+     } else {
+       auto & nonNullValue_2 = nonNullValue_0.myEnum.SetNonNull();
+         nonNullValue_2 = static_cast<std::remove_reference_t<decltype(nonNullValue_2)>>(value.myEnum.unsignedCharValue);
   }
-     }
   }
 
         chip::Controller::ClusterBase cppCluster(exchangeManager, session, self.endpointID.unsignedShortValue);
